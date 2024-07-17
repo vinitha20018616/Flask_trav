@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ location.title }} Details</title>
+    
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    
+    <style>
+        
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="bg-dark py-3">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div>
+                <h1>{{ username }}</h1>
+            </div>
+            <div>
+                
+                <a class="btn btn-outline-primary mr-2" href="/">Home</a>
+                <a class="btn btn-outline-danger" href="/logout">Logout</a>
+                <a class="btn btn-outline-info" href="/bookings">Bookings</a> <!-- New Bookings button -->
+                <button class="btn btn-primary" onclick="goBack()">Go Back</button>
+            </div>
+        </div> 
+    </header>
+
+    
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-8">
+                <h1>{{ location.title }}</h1>
+                <img src="{{ url_for('static', filename=location.image) }}" alt="{{ location.title }}" class="img-fluid mb-3">
+                <p class="lead">{{ location.description }}</p>
+                
+                
+                <div class="details">
+                    <p><strong>Price:</strong> {{ location.price }}</p>
+                    <p><strong>Rating:</strong> {{ location.rating }}</p>
+                    <p><strong>Reviews:</strong> {{ location.reviews }}</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+               
+                <div class="buttons mt-3">
+                    <a href="#" class="btn btn-success btn-block mb-2" onclick="openBookingModal()">Add Booking</a>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <div id="bookingModal" class="modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Booking</h5>
+                    <button type="button" class="close" onclick="closeBookingModal()">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="bookingForm">
+                        <div class="form-group">
+                            <label for="name">Name:</label>
+                            <input type="text" id="name" name="name" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="age">Age:</label>
+                            <input type="number" id="age" name="age" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="date">Date:</label>
+                            <input type="date" id="date" name="date" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="country">Country:</label>
+                            <input type="text" id="country" country="country" class="form-control" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="address">Address:</label>
+                            <textarea id="address" name="address" class="form-control" rows="3" required></textarea>
+                        </div>
+                        <button type="button" class="btn btn-primary btn-block" onclick="saveBooking()">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+   
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8sh/jIkNhjFWB2IlqyVq2GS/gp6D5Lrb2L6Qew" crossorigin="anonymous"></script>
+    
+    <!-- JavaScript for Modal Functionality -->
+    <script>
+        function goBack() {
+            window.history.back();
+        }
+
+        // Open the booking modal
+        function openBookingModal() {
+            document.getElementById('bookingModal').style.display = 'block';
+        }
+
+        // Close the booking modal
+        function closeBookingModal() {
+            document.getElementById('bookingModal').style.display = 'none';
+        }
+
+        // Function to save booking data
+        function saveBooking() {
+            var name = document.getElementById('name').value;
+            var age = document.getElementById('age').value;
+            var date = document.getElementById('date').value;
+            var country = document.getElementById('country').value;
+            var address = document.getElementById('address').value;
+
+            var bookingData = {
+                name: name,
+                age: age,
+                date: date,
+                country: country,
+                address: address
+            };
+
+            // Example of sending data using fetch API
+            fetch('/save_booking', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(bookingData),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+                
+                closeBookingModal();
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                
+            });
+        }
+    </script>
+
+</body>
+</html>
