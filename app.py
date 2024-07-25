@@ -25,6 +25,7 @@ locations = [
 def index():
     query = request.args.get('query', '')
     sort = request.args.get('sort')
+    template = request.args.get('template', 'index') 
 
     if sort == 'title_asc':
         locations_sorted = sorted(locations, key=lambda x: x['title'])
@@ -38,7 +39,8 @@ def index():
     else:
         locations_filtered = locations_sorted
 
-    return render_template('index.html', locations=locations_filtered, query=query)
+    return render_template(f'{template}.html', locations=locations_filtered, query=query, sort=sort)
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
