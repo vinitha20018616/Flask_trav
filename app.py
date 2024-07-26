@@ -3,22 +3,22 @@ from pymongo import MongoClient
 from bson.objectid import ObjectId
 
 app = Flask(__name__)
-app.secret_key = 'super_secret_key'  
+app.secret_key = 'your_secret_key'  # Set a secret key for session management
 
-
+# Configure MongoDB connection
 client = MongoClient('mongodb://localhost:27017/')
 db = client['location_app']
 users_collection = db['users']
 bookings_collection = db['bookings']
 
-
+# Mock data for locations (can be replaced with MongoDB data in a real application)
 locations = [
-    {'id': 1, 'title': 'America', 'image': 'images/location1.jpg', 'rating': 4.5, 'price': '$$', 'reviews': 120, 'description': "1111111111111111111111111111111111111111"},
-    {'id': 2, 'title': 'Italy', 'image': 'images/location2.jpg', 'rating': 4.8, 'price': '$$$', 'reviews': 200, 'description': "2222222222222222222222222222222222222222222"},
-    {'id': 3, 'title': 'Turkey', 'image': 'images/location3.jpg', 'rating': 4.2, 'price': '$$', 'reviews': 90, 'description': "3333333333333333333333333333333333333333333333"},
-    {'id': 4, 'title': 'Germany', 'image': 'images/location4.jpg', 'rating': 4.6, 'price': '$$', 'reviews': 150, 'description': "44444444444444444444444444444444444444444444"},
-    {'id': 5, 'title': 'Japan', 'image': 'images/location5.jpg', 'rating': 4.7, 'price': '$$$', 'reviews': 180, 'description': "55555555555555555555555555555555555555555555555"},
-    {'id': 6, 'title': 'India', 'image': 'images/location6.jpg', 'rating': 4.4, 'price': '$', 'reviews': 100, 'description': "666666666666666666666666666666666666666666666666666666"}
+    {'id': 1, 'title': 'UAE', 'image': 'images/location1.jpg', 'rating': 4.5, 'price': '1000.EUR/NIGHT', 'reviews': 120, 'description': "Welcome to the United Arab Emirates (UAE), a land of contrasts where tradition and modernity collide to create a captivating tapestry of experiences. From the shimmering skyscrapers of Dubai to the serene desert landscapes of Abu Dhabi, the UAE offers a wealth of attractions waiting to be discovered. Let's embark on a journey to explore the charms of this dynamic country."},
+    {'id': 2, 'title': 'Amsterdam', 'image': 'images/location2.jpg', 'rating': 4.8, 'price': '500.EUR/NIGHT', 'reviews': 200, 'description': " Nestled in the heart of the Netherlands, Amsterdam is a city that effortlessly blends history, culture, and modernity. From its picturesque canals to its vibrant neighborhoods, Amsterdam offers a unique experience for every visitor. Whether you're strolling along the cobblestone streets, admiring the iconic architecture, or indulging in the diverse culinary scene, there's no shortage of things to discover in this enchanting city. "},
+    {'id': 3, 'title': 'Italy', 'image': 'images/location3.jpg', 'rating': 4.2, 'price': '600.EUR/NIGHT', 'reviews': 90, 'description': " Venice, the floating city of Italy, boasts an engineering marvel that has enchanted visitors for centuries - the Grand Canal. This iconic waterway winds its way through the heart of Venice, serving as both a vital transportation route and a captivating symbol of the city's rich history and culture. From its graceful bridges to its majestic palazzos, the Grand Canal offers a journey through time, revealing the secrets of Venice's past and the enduring allure of its Venetian charm."},
+    {'id': 4, 'title': 'Japan', 'image': 'images/location4.jpg', 'rating': 4.6, 'price': '1500.EUR/NIGHT', 'reviews': 150, 'description': "Welcome to Japan, a land of ancient traditions, modern innovation, and breathtaking natural beauty. From the bustling streets of Tokyo to the serene temples of Kyoto, Japan offers a wealth of experiences waiting to be discovered. Let's embark on a journey to explore the beauty and culture of this fascinating country."},
+    {'id': 5, 'title': 'Los Angeles', 'image': 'images/location5.jpg', 'rating': 4.7, 'price': '2000.EUR/NIGHT', 'reviews': 180, 'description': "Welcome to the City of Angels, where dreams are made and stars shine bright against the backdrop of palm trees and endless sunshine. Los Angeles, often hailed as the entertainment capital of the world, offers a dazzling array of experiences for visitors from around the globe. From its iconic landmarks to its diverse neighborhoods, LA beckons with promises of adventure, discovery, and unforgettable memories."},
+    {'id': 6, 'title': 'Mexico', 'image': 'images/location6.jpg', 'rating': 4.4, 'price': '1000.EUR/NIGHT', 'reviews': 100, 'description': " Bienvenidos a México! A land of vibrant colors, rich traditions, and unparalleled natural beauty. From the bustling streets of its vibrant cities to the tranquil shores of its pristine beaches, Mexico offers an enchanting tapestry of experiences waiting to be explored. Let's embark on a journey to discover the wonders of this captivating country."}
 ]
 
 @app.route('/')
@@ -40,6 +40,7 @@ def index():
         locations_filtered = locations_sorted
 
     return render_template(f'{template}.html', locations=locations_filtered, query=query, sort=sort)
+
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -76,7 +77,7 @@ def user(username):
     if not user:
         return redirect(url_for('login'))
 
-   
+    # Ensure 'favorites' field exists
     if 'favorites' not in user:
         user['favorites'] = []
         users_collection.update_one({'username': username}, {'$set': {'favorites': user['favorites']}})
@@ -89,7 +90,7 @@ def user(username):
             user['favorites'].append(location_id)
         users_collection.update_one({'username': username}, {'$set': {'favorites': user['favorites']}})
 
-    
+    # Fetch bookings for the current user
     user_bookings = list(bookings_collection.find({'username': username}))
 
     if sort == 'title_asc':
@@ -115,7 +116,7 @@ def favorites():
         return redirect(url_for('login'))
     
     user = users_collection.find_one({'username': username})
-   
+    # Ensure 'favorites' field exists
     if 'favorites' not in user:
         user['favorites'] = []
         users_collection.update_one({'username': username}, {'$set': {'favorites': user['favorites']}})
@@ -134,14 +135,14 @@ def location_detail(location_id):
     if location:
         return render_template('location_detail.html', location=location)
     else:
-        return "Location not found", 
+        return "Location not found", 404
 
 @app.route('/save_booking', methods=['POST'])
 def save_booking():
     booking_data = request.json
-    booking_data['username'] = session.get('username')  
+    booking_data['username'] = session.get('username')  # Add username to booking data
     bookings_collection.insert_one(booking_data)
-    return jsonify({'message': 'Booking saved successfully'}), 
+    return jsonify({'message': 'Booking saved successfully'}), 200
 
 @app.route('/bookings')
 def bookings():
@@ -155,16 +156,16 @@ def bookings():
 @app.route('/delete_booking/<booking_id>', methods=['POST'])
 def delete_booking(booking_id):
     try:
-        
+        # Convert booking_id from string to ObjectId
         booking_id = ObjectId(booking_id)
-        
+        # Delete the booking document from MongoDB
         result = bookings_collection.delete_one({'_id': booking_id})
         if result.deleted_count == 1:
             return redirect(url_for('bookings'))
         else:
-            return "Booking not found", 
+            return "Booking not found", 404
     except Exception as e:
-        return f"An error occurred: {e}", 
+        return f"An error occurred: {e}", 500
 
 if __name__ == '__main__':
     app.run(debug=True)
